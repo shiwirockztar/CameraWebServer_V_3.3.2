@@ -14,12 +14,13 @@ Pasos rápidos:
    pio run -t upload
 
 Notas:
+
 - Los fuentes originales se copiaron a `src/` para que PlatformIO los compile.
 - `board_config.h` selecciona `CAMERA_MODEL_ESP32S3_EYE` por defecto; cámbialo si usas otra placa.
 - Si necesitas particiones o flags especiales (PSRAM/partitions), ajusta `platformio.ini`.
 
-Git quick-recovery commands
---------------------------
+## Git quick-recovery commands
+
 Si necesitas restaurar tu copia de trabajo al último commit limpio o eliminar los archivos no rastreados, usa estos comandos desde la raíz del proyecto (cmd.exe / PowerShell):
 
 ```bash

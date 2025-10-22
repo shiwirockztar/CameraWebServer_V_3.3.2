@@ -8,10 +8,23 @@
 #include "board_config.h"
 
 // ===========================
-// Enter your WiFi credentials (edit before uploading)
+// WiFi credentials are loaded from secrets/secrets.h (not tracked by git)
+// Copy secrets/secrets.h.example -> secrets/secrets.h and fill in your values.
 // ===========================
-const char *ssid = "ALICIA ISABEL";
-const char *password = "39014972";
+#include "../secrets/secrets.h"
+
+// Fallback in case secrets header is missing (keeps code compiling)
+#ifndef WIFI_SSID
+const char *ssid = "YOUR_SSID";
+#else
+const char *ssid = WIFI_SSID;
+#endif
+
+#ifndef WIFI_PASSWORD
+const char *password = "YOUR_PASSWORD";
+#else
+const char *password = WIFI_PASSWORD;
+#endif
 
 void startCameraServer();
 void setupLedFlash();

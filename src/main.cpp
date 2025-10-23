@@ -10,6 +10,9 @@
 // ===========================
 // WiFi credentials are loaded from secrets/secrets.h (not tracked by git)
 // Copy secrets/secrets.h.example -> secrets/secrets.h and fill in your values.
+// The file must define these variables:
+//   const char* WIFI_SSID = "your_ssid";
+//   const char* WIFI_PASSWORD = "your_password";
 // ===========================
 #include "../secrets/secrets.h"
 
@@ -27,21 +30,21 @@ void loadCredentials() {
   String p = prefs.getString("pass", "");
   prefs.end();
 
-#ifdef WIFI_SSID
-  if (s.length() == 0) wifi_ssid = String(WIFI_SSID);
-  else wifi_ssid = s;
-#else
-  if (s.length() == 0) wifi_ssid = String("YOUR_SSID");
-  else wifi_ssid = s;
-#endif
+  // If credentials are stored in NVS, use them. Otherwise use the values
+  // provided in secrets/secrets.h (WIFI_SSID and WIFI_PASSWORD).
+  if (s.length() > 0) {
+    wifi_ssid = s;
+  } else {
+    // secrets.h must define WIFI_SSID as a const char* (see example file)
+    wifi_ssid = String(WIFI_SSID);
+  }
 
-#ifdef WIFI_PASSWORD
-  if (p.length() == 0) wifi_password = String(WIFI_PASSWORD);
-  else wifi_password = p;
-#else
-  if (p.length() == 0) wifi_password = String("YOUR_PASSWORD");
-  else wifi_password = p;
-#endif
+  if (p.length() > 0) {
+    wifi_password = p;
+  } else {
+    // secrets.h must define WIFI_PASSWORD as a const char*
+    wifi_password = String(WIFI_PASSWORD);
+  }
 }
 
 void saveCredentials() {

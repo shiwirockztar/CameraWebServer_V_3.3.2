@@ -8,6 +8,8 @@
 #include "sdkconfig.h"
 #include "camera_index.h"
 #include "board_config.h"
+#include <Preferences.h>
+#include "portal.h"
 
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 #include "esp32-hal-log.h"
@@ -126,6 +128,8 @@ static esp_err_t bmp_handler(httpd_req_t *req) {
   log_i("BMP: %llums, %uB", (uint64_t)((fr_end - fr_start) / 1000), buf_len);
   return res;
 }
+
+// Portal endpoints moved to src/portal.cpp (portal_register)
 
 static size_t jpg_encode_stream(void *arg, size_t index, const void *data, size_t len) {
   jpg_chunking_t *j = (jpg_chunking_t *)arg;
@@ -817,6 +821,8 @@ void startCameraServer() {
     httpd_register_uri_handler(camera_httpd, &greg_uri);
     httpd_register_uri_handler(camera_httpd, &pll_uri);
     httpd_register_uri_handler(camera_httpd, &win_uri);
+    // register portal endpoints (in portal.cpp)
+    portal_register(camera_httpd);
   }
 
   config.server_port += 1;

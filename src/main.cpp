@@ -55,6 +55,7 @@ void serialCmdsPrintHelp();
 void startCameraServer();
 void setupLedFlash();
 #include "serial_cmds.h"
+#include "ap_mode.h"
 
 void setup() {
   Serial.begin(115200);
@@ -155,6 +156,15 @@ void setup() {
     WiFi.setSleep(false);
   } else {
     Serial.println("WiFi connection failed (initial)");
+    // Start AP portal so user can configure WiFi
+    const char *ap_ssid = "CameraPortal";
+    const char *ap_pass = ""; // open AP
+    bool ok = apModeStart(ap_ssid, NULL);
+    if (ok) {
+      Serial.printf("Started AP '%s' at %s - visit http://%s/portal\n", ap_ssid, apModeIP(), apModeIP());
+    } else {
+      Serial.println("Failed to start AP portal");
+    }
   }
 
   // Initialize serial command module

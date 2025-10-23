@@ -87,3 +87,30 @@ Problemas comunes:
 ---
 
 Si quieres, puedo añadir ejemplos rápidos de comandos a ejecutar desde PowerShell o la CLI para automatizar el envío (por ejemplo usando `echo "setssid MiRed" > COM3`), o bien puedo ejecutar una compilación para confirmar que todo compila correctamente.
+
+## Modo AP / Portal de configuración
+
+Si el dispositivo no puede conectarse a la red configurada, arranca automáticamente un punto de acceso (AP) llamado "CameraPortal" y un servidor web mínimo. Esto te permite conectar un móvil/PC al AP y configurar la red Wi‑Fi desde un formulario web.
+
+Pasos rápidos:
+
+1. Reinicia o enciende el dispositivo. Si no logra conectarse a la red configurada, verás en el Monitor Serial una línea como:
+   Started AP 'CameraPortal' at 192.168.4.1 - visit http://192.168.4.1/portal
+
+2. En tu móvil/PC selecciona la red Wi‑Fi "CameraPortal" (es un AP abierto por defecto).
+
+3. Abre el navegador y visita: http://192.168.4.1/portal
+
+4. Rellena los campos SSID y Password y pulsa Save.
+
+5. Tras guardar puedes pulsar el enlace "Reboot now" en la página o reiniciar el dispositivo manualmente. Al reiniciar el dispositivo intentará conectar usando las credenciales guardadas.
+
+Detalles y notas:
+- IP del portal: por defecto el AP usa la IP 192.168.4.1.
+- Persistencia: el formulario guarda `ssid` y `pass` en la memoria NVS del ESP32 (misma ubicación que los comandos serie). No se suben al repositorio.
+- Seguridad: actualmente el AP es abierto (sin contraseña). Si quieres, puedo cambiarlo para que use WPA2 con contraseña configurable.
+- Conexión inmediata: por defecto el flujo guarda los datos y pide reinicio; puedo cambiarlo para que intente conectar inmediatamente y muestre el resultado en la misma página si prefieres.
+
+Problemas comunes:
+- No ves la página en el navegador: asegúrate de que tu dispositivo (PC/teléfono) está conectado a la red "CameraPortal" y que no usas VPN o adaptadores que impidan acceder a 192.168.4.1.
+- Tras guardar y reiniciar sigue sin conectar: revisa que SSID y contraseña estén correctos, prueba escribirlas de nuevo, o usa los comandos serie (`show`, `setssid`, `setpass`, `connect`) para depurar.

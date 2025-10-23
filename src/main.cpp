@@ -172,8 +172,16 @@ void setup() {
 
   startCameraServer();
 
+  // Print the address to use depending on whether STA or AP mode is active.
+  String addr;
+  if (WiFi.status() == WL_CONNECTED) {
+    addr = WiFi.localIP().toString();
+  } else {
+    addr = String(apModeIP());
+  }
+
   Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
+  Serial.print(addr);
   Serial.println("' to connect");
 }
 

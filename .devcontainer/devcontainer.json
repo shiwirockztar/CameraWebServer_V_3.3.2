@@ -1,72 +1,79 @@
 {
   "name": "ESP32 Camera - PlatformIO (Codespaces)",
-  "image": "mcr.microsoft.com/devcontainers/base:debian",
+  // Imagen base para el Codespace: uso una imagen Node.js común que es útil para
+  // desarrollo general (puedes cambiar a una imagen Python si lo prefieres).
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18-bullseye",
 
   /*
     Descripción y notas:
     - La propiedad "customizations.vscode" contiene las extensiones y settings que
       Codespaces / Dev Containers aplica automáticamente.
-    - JSON no soporta comentarios oficiales; por eso incluyo instrucciones en
-      "description" y en el objeto "devcontainerNotes" para que puedas editar.
+    - He eliminado las propiedades no estándar "description" y "devcontainerNotes"
+      para evitar advertencias de esquema. Consulta `.devcontainer/README.md` para
+      notas extensas.
   */
-  "description": "Contenedor para desarrollar el proyecto ESP32 Camera con PlatformIO.\nAgregar extensiones locales: ejecuta 'code --list-extensions' en tu VS Code y pega los IDs en customizations.vscode.extensions.",
 
   "customizations": {
     "vscode": {
       "extensions": [
-        "marus25.cortex-debug",
-        "ms-vscode.cpptools",
-        "espressif.esp-idf-extension",
-        "platformio.platformio-ide",
-        "ms-python.python",
-        "streetsidesoftware.code-spell-checker",
-        "mhutchie.git-graph",
-        "eamodio.gitlens",
+        // Lista de extensiones detectadas/indicadas por el usuario. Se instalarán
+        // automáticamente en el Codespace al abrir el contenedor.
+        "angular.ng-template",
+        "benjaminbenais.copilot-theme",
+        "docker.docker",
+        "dracula-theme.theme-dracula",
+        "endormi.2077-theme",
         "esbenp.prettier-vscode",
-        "dbaeumer.vscode-eslint",
-        // Neon Vommit color theme requested by user
-        "ghgofort.neon-vommit"
+        "ghgofort.neon-vommit",
+        "github.copilot",
+        "github.copilot-chat",
+        "github.copilot-labs",
+        "github.remotehub",
+        "kisstkondoros.vscode-gutter-preview",
+        "mechatroner.rainbow-csv",
+        "mhutchie.git-graph",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-dotnettools.vscodeintellicode-csharp",
+        "ms-vscode-remote.remote-containers",
+        "ms-vscode.azure-repos",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cpptools-themes",
+        "ms-vscode.remote-repositories",
+        "ms-vsliveshare.vsliveshare",
+        "pkief.material-icon-theme",
+        "platformio.platformio-ide",
+        "rapidapi.vscode-rapidapi-client",
+        "rapidapi.vscode-services",
+        "tabnine.tabnine-vscode",
+        "usernamehw.errorlens"
       ],
 
-      // Lista completa proporcionada por el usuario (comentada para futura referencia):
-      /*
-      angular.ng-template
-      benjaminbenais.copilot-theme
-      docker.docker
-      dracula-theme.theme-dracula
-      endormi.2077-theme
-      esbenp.prettier-vscode
-      ghgofort.neon-vommit
-      github.copilot
-      github.copilot-chat
-      github.copilot-labs
-      github.remotehub
-      kisstkondoros.vscode-gutter-preview
-      mechatroner.rainbow-csv
-      mhutchie.git-graph
-      ms-azuretools.vscode-containers
-      ms-azuretools.vscode-docker
-      ms-dotnettools.csdevkit
-      ms-dotnettools.csharp
-      ms-dotnettools.vscode-dotnet-runtime
-      ms-dotnettools.vscodeintellicode-csharp
-      ms-vscode-remote.remote-containers
-      ms-vscode.azure-repos
-      ms-vscode.cmake-tools
-      ms-vscode.cpptools
-      ms-vscode.cpptools-extension-pack
-      ms-vscode.cpptools-themes
-      ms-vscode.remote-repositories
-      ms-vsliveshare.vsliveshare
-      pkief.material-icon-theme
-      platformio.platformio-ide
-      rapidapi.vscode-rapidapi-client
-      rapidapi.vscode-services
-      tabnine.tabnine-vscode
-      usernamehw.errorlens
-      */
+      // Ajustes del editor a aplicar dentro del Codespace. Estos valores son
+      // asumidos como ejemplos basados en tu petición; cámbialos si quieres que
+      // reflejen exactamente tu `settings.json` local.
       "settings": {
+        // Fuente y ligaduras
+        "editor.fontFamily": "'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace",
+        "editor.fontLigatures": true,
+        // Tamaño y zoom
+        "editor.fontSize": 14,
+        "window.zoomLevel": 0,
+        // Tema de color: cambia a "Neon Vommit" si ese es el nombre exacto del theme
+        "workbench.colorTheme": "Neon Vommit",
+        // Barra de menú
+        "window.menuBarVisibility": "compact",
+        // Minimap y otras opciones visuales
+        "editor.minimap.enabled": false,
+        "editor.tabSize": 2,
         "editor.formatOnSave": true,
+        "files.autoSave": "onFocusChange",
+        // C/C++ y Python helpers
         "C_Cpp.clang_format_fallbackStyle": "Google",
         "python.linting.enabled": true,
         "python.linting.pylintEnabled": true
@@ -78,12 +85,6 @@
 
   "forwardPorts": [80, 8080, 8000],
 
-  // Campo adicional con notas editables (sirve como comentarios dentro del JSON)
-  "devcontainerNotes": {
-    "howToAddLocalExtensions": "En tu máquina local ejecuta: code --list-extensions > my-extensions.txt, luego copia los IDs en customizations.vscode.extensions",
-    "aboutImage": "Puedes cambiar 'image' por una imagen más específica o usar 'build' con Dockerfile para personalizar más.",
-    "captivePortalTip": "Si quieres que Codespaces abra automáticamente la página del portal cuando te conectes al AP, eso debe manejarse en el firmware del dispositivo (captuve portal / redirect endpoints)."
-  },
 
   "remoteUser": "vscode"
 }

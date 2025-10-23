@@ -10,6 +10,7 @@
 #include "board_config.h"
 #include <Preferences.h>
 #include "portal.h"
+#include <WiFi.h>
 
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 #include "esp32-hal-log.h"
@@ -642,6 +643,15 @@ static esp_err_t win_handler(httpd_req_t *req) {
 }
 
 static esp_err_t index_handler(httpd_req_t *req) {
+  // If the device is running as an Access Point, redirect clients hitting
+  // the root path to the configuration portal so they can configure WiFi.
+  wifi_mode_t mode = WiFi.getMode();
+  if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA) {
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", "/portal");
+    return httpd_resp_send(req, NULL, 0);
+  }
+
   httpd_resp_set_type(req, "text/html");
   httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
   sensor_t *s = esp_camera_sensor_get();
@@ -657,6 +667,13 @@ static esp_err_t index_handler(httpd_req_t *req) {
     log_e("Camera sensor not found");
     return httpd_resp_send_500(req);
   }
+}
+
+// Simple captive-portal handler: redirect to /portal (useful for Android/iOS detection)
+static esp_err_t captive_redirect_handler(httpd_req_t *req) {
+  httpd_resp_set_status(req, "302 Found");
+  httpd_resp_set_hdr(req, "Location", "/portal");
+  return httpd_resp_send(req, NULL, 0);
 }
 
 void startCameraServer() {
@@ -823,6 +840,31 @@ void startCameraServer() {
     httpd_register_uri_handler(camera_httpd, &win_uri);
     // register portal endpoints (in portal.cpp)
     portal_register(camera_httpd);
+
+    // captive portal redirects for common OS captive-detect URLs
+    httpd_uri_t gen204_uri = {
+      .uri = "/generate_204",
+      .method = HTTP_GET,
+      .handler = captive_redirect_handler,
+      .user_ctx = NULL
+    };
+    httpd_register_uri_handler(camera_httpd, &gen204_uri);
+
+    httpd_uri_t hotspot_detect_uri = {
+      .uri = "/hotspot-detect.html",
+      .method = HTTP_GET,
+      .handler = captive_redirect_handler,
+      .user_ctx = NULL
+    };
+    httpd_register_uri_handler(camera_httpd, &hotspot_detect_uri);
+
+    httpd_uri_t fwlink_uri = {
+      .uri = "/fwlink",
+      .method = HTTP_GET,
+      .handler = captive_redirect_handler,
+      .user_ctx = NULL
+    };
+    httpd_register_uri_handler(camera_httpd, &fwlink_uri);
   }
 
   config.server_port += 1;

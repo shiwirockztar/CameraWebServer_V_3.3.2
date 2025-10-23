@@ -118,8 +118,24 @@ void handleSerialCommand(String cmd) {
 void serialCmdsLoop() {
   while (Serial.available()) {
     int c = Serial.read();
-    if (c == '\r') continue; // ignore CR
+
+    // Handle backspace/delete locally so user sees correction
+    if (c == 8 || c == 127) { // backspace
+      if (incoming.length() > 0) {
+        incoming.remove(incoming.length() - 1);
+        // erase char on terminal: move back, print space, move back
+        Serial.print("\b \b");
+      }
+      continue;
+    }
+
+    // Echo the character so it's visible in terminals without local echo
+    if (c != '\r') Serial.write((char)c);
+
+    if (c == '\r') continue; // ignore CR (we echo LF below when newline arrives)
     if (c == '\n') {
+      // ensure a newline is printed on echo
+      Serial.write('\n');
       handleSerialCommand(incoming);
       incoming = "";
     } else {

@@ -13,18 +13,140 @@
 // ===========================
 #include "../secrets/secrets.h"
 
-// Fallback in case secrets header is missing (keeps code compiling)
-#ifndef WIFI_SSID
-const char *ssid = "YOUR_SSID";
+#include <Preferences.h>
+
+// WiFi credentials stored in RAM for runtime modification and persisted in NVS
+String wifi_ssid;
+String wifi_password;
+Preferences prefs;
+
+// Initialize wifi_ssid/password from stored NVS values or fall back to secrets/defaults
+void loadCredentials() {
+  prefs.begin("wifi", false);
+  String s = prefs.getString("ssid", "");
+  String p = prefs.getString("pass", "");
+  prefs.end();
+
+#ifdef WIFI_SSID
+  if (s.length() == 0) wifi_ssid = String(WIFI_SSID);
+  else wifi_ssid = s;
 #else
-const char *ssid = WIFI_SSID;
+  if (s.length() == 0) wifi_ssid = String("YOUR_SSID");
+  else wifi_ssid = s;
 #endif
 
-#ifndef WIFI_PASSWORD
-const char *password = "YOUR_PASSWORD";
+#ifdef WIFI_PASSWORD
+  if (p.length() == 0) wifi_password = String(WIFI_PASSWORD);
+  else wifi_password = p;
 #else
-const char *password = WIFI_PASSWORD;
+  if (p.length() == 0) wifi_password = String("YOUR_PASSWORD");
+  else wifi_password = p;
 #endif
+}
+
+void saveCredentials() {
+  prefs.begin("wifi", false);
+  prefs.putString("ssid", wifi_ssid);
+  prefs.putString("pass", wifi_password);
+  prefs.end();
+  Serial.println("Credentials saved to NVS");
+}
+
+void eraseCredentials() {
+  prefs.begin("wifi", false);
+  prefs.remove("ssid");
+  prefs.remove("pass");
+  prefs.end();
+  Serial.println("Credentials removed from NVS");
+}
+
+// Helper to (re)connect using current wifi_ssid/wifi_password
+bool connectWiFi(unsigned long timeoutMs = 15000) {
+  Serial.printf("Connecting to WiFi '%s'...\n", wifi_ssid.c_str());
+  WiFi.disconnect(true);
+  WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
+  unsigned long start = millis();
+  while (WiFi.status() != WL_CONNECTED && (millis() - start) < timeoutMs) {
+    delay(500);
+    Serial.print('.');
+  }
+  Serial.println();
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("WiFi connected");
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
+    return true;
+  }
+  Serial.println("WiFi connection failed");
+  return false;
+}
+
+// Serial command processing
+void printHelp() {
+  Serial.println("Serial commands:");
+  Serial.println("  setssid <ssid>    - Set SSID and save");
+  Serial.println("  setpass <pass>    - Set password and save");
+  Serial.println("  showcreds         - Show current SSID and masked password");
+  Serial.println("  connect           - Attempt to connect using current credentials");
+  Serial.println("  erasecreds        - Remove saved credentials from NVS (resets to defaults)");
+  Serial.println("  help              - Show this message");
+}
+
+void handleSerialCommand(String cmd) {
+  cmd.trim();
+  if (cmd.length() == 0) return;
+  if (cmd.equalsIgnoreCase("help")) {
+    printHelp();
+    return;
+  }
+  if (cmd.startsWith("setssid ")) {
+    String v = cmd.substring(8);
+    v.trim();
+    if (v.length() > 0) {
+      wifi_ssid = v;
+      saveCredentials();
+      Serial.println("SSID updated");
+    } else Serial.println("Usage: setssid <ssid>");
+    return;
+  }
+  if (cmd.startsWith("setpass ")) {
+    String v = cmd.substring(8);
+    v.trim();
+    if (v.length() > 0) {
+      wifi_password = v;
+      saveCredentials();
+      Serial.println("Password updated");
+    } else Serial.println("Usage: setpass <password>");
+    return;
+  }
+  if (cmd.equalsIgnoreCase("showcreds")) {
+    Serial.printf("SSID: %s\n", wifi_ssid.c_str());
+    String masked = "";
+    for (size_t i = 0; i < wifi_password.length(); ++i) masked += '*';
+    Serial.printf("Password: %s\n", masked.c_str());
+    return;
+  }
+  if (cmd.equalsIgnoreCase("showip")) {
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.print("IP: ");
+      Serial.println(WiFi.localIP());
+    } else {
+      Serial.println("Not connected to WiFi");
+    }
+    return;
+  }
+  if (cmd.equalsIgnoreCase("connect")) {
+    connectWiFi();
+    return;
+  }
+  if (cmd.equalsIgnoreCase("erasecreds")) {
+    eraseCredentials();
+    // reload defaults from secrets/example
+    loadCredentials();
+    return;
+  }
+  Serial.println("Unknown command. Type 'help' for commands.");
+}
 
 void startCameraServer();
 void setupLedFlash();
@@ -110,26 +232,14 @@ void setup() {
   s->set_vflip(s, 1);
   s->set_hmirror(s, 1);
 #endif
+  // Load credentials from NVS or fallback to secrets
+  loadCredentials();
 
-#if defined(CAMERA_MODEL_ESP32S3_EYE)
-  s->set_vflip(s, 1);
-#endif
-
-// Setup LED FLash if LED pin is defined in camera_pins.h
-#if defined(LED_GPIO_NUM)
-  setupLedFlash();
-#endif
-
-  WiFi.begin(ssid, password);
-  WiFi.setSleep(false);
-
-  Serial.print("WiFi connecting");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+  Serial.printf("Using SSID: %s\n", wifi_ssid.c_str());
+  bool wifi_ok = connectWiFi();
+  if (wifi_ok) {
+    WiFi.setSleep(false);
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
 
   startCameraServer();
 
@@ -139,6 +249,20 @@ void setup() {
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  static String incoming = "";
+  while (Serial.available()) {
+    int c = Serial.read();
+    if (c == '\r') continue; // ignore CR
+    if (c == '\n') {
+      handleSerialCommand(incoming);
+      incoming = "";
+    } else {
+      incoming += (char)c;
+      // prevent runaway memory usage
+      if (incoming.length() > 256) incoming.remove(0, incoming.length() - 256);
+    }
+  }
+
+  // Keep the rest of the original loop behavior if any (camera server is event driven)
+  delay(10);
 }

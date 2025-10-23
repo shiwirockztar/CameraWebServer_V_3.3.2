@@ -60,9 +60,9 @@ Lista de comandos disponibles (detallada):
    - Ejemplo: `setpass MiClaveSecreta` -> respuesta: "Password updated" y "Credentials saved to NVS".
    - Notas: la contraseña se guarda en la memoria no volátil del dispositivo y no en el repositorio (no se sube a Git).
 
-- showcreds
+- show
    - Qué hace: muestra el SSID actual y una versión enmascarada de la contraseña (solo asteriscos) para evitar exponer la clave en el monitor.
-   - Ejemplo: `showcreds` -> salida: `SSID: MiRedCasa` y `Password: ********`.
+   - Ejemplo: `show` -> salida: `SSID: MiRedCasa` y `Password: ********`.
 
 - showip
    - Qué hace: muestra la IP actual si el dispositivo está conectado; si no lo está, imprime "Not connected to WiFi".
@@ -72,9 +72,9 @@ Lista de comandos disponibles (detallada):
    - Qué hace: intenta conectar a la red Wi‑Fi usando las credenciales actualmente cargadas en memoria (las guardadas en NVS o los valores por defecto cargados desde `secrets/secrets.h`). Imprime puntos mientras intenta conectarse y finalmente el resultado (IP o fallo).
    - Ejemplo: `connect` -> `Connecting to WiFi 'MiRedCasa'...` seguido de `WiFi connected` y `IP: 192.168.1.42` (si tiene éxito) o `WiFi connection failed` si no.
 
-- erasecreds
+- del
    - Qué hace: elimina las credenciales guardadas en NVS. Tras ejecutar este comando, al reiniciar (o al volver a ejecutar `loadCredentials()`), el dispositivo volverá a usar las credenciales por defecto que provienen de `secrets/secrets.h` o los valores de fallback (`YOUR_SSID`/`YOUR_PASSWORD`).
-   - Ejemplo: `erasecreds` -> `Credentials removed from NVS`.
+   - Ejemplo: `del` -> `Credentials removed from NVS`.
 
 Consideraciones de seguridad:
 - Las credenciales se almacenan en la memoria NVS del ESP32. No se suben al repositorio porque `secrets/secrets.h` está en `.gitignore` y las credenciales guardadas en NVS residen localmente en el dispositivo.

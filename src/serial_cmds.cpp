@@ -53,10 +53,10 @@ void serialCmdsPrintHelp() {
   Serial.println("Serial commands:");
   Serial.println("  setssid <ssid>    - Set SSID and save");
   Serial.println("  setpass <pass>    - Set password and save");
-  Serial.println("  showcreds         - Show current SSID and masked password");
+  Serial.println("  show              - Show current SSID and masked password");
   Serial.println("  showip            - Show current IP if connected");
   Serial.println("  connect           - Attempt to connect using current credentials");
-  Serial.println("  erasecreds        - Remove saved credentials from NVS (resets to defaults)");
+  Serial.println("  del               - Remove saved credentials from NVS (resets to defaults)");
   Serial.println("  help              - Show this message");
 }
 
@@ -87,7 +87,7 @@ void handleSerialCommand(String cmd) {
     } else Serial.println("Usage: setpass <password>");
     return;
   }
-  if (cmd.equalsIgnoreCase("showcreds")) {
+  if (cmd.equalsIgnoreCase("show")) {
     Serial.printf("SSID: %s\n", wifi_ssid.c_str());
     String masked = "";
     for (size_t i = 0; i < wifi_password.length(); ++i) masked += '*';
@@ -107,7 +107,7 @@ void handleSerialCommand(String cmd) {
     connectWiFi();
     return;
   }
-  if (cmd.equalsIgnoreCase("erasecreds")) {
+  if (cmd.equalsIgnoreCase("del")) {
     eraseCredentials();
     // reload defaults from secrets/example will be handled by main
     return;
